@@ -165,7 +165,7 @@ scene({
         // normal map
         texture({
             name: 'box-normal-map',
-            url: '/assets/images/aluminumNormalMap.jpg'//'/assets/images/testNormalMap.jpg'
+            url: 'assets/images/aluminumNormalMap.jpg'
         }),
         // floor
         texture({

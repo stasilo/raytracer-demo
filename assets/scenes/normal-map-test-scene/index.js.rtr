@@ -78,7 +78,7 @@ scene({
         }),
         texture({
             name: 'normal-map',
-            url: '/assets/images/aluminumNormalMap.jpg'
+            url: 'assets/images/aluminumNormalMap.jpg'
         }),
     ],
     materials: [

@@ -40,7 +40,7 @@ scene({
             },
         }),
         objModel({
-            url: '/assets/models/deer.obj',
+            url: 'assets/models/deer.obj',
             material: 'model-material',
             smoothShading: true,
             scale: 0.02,
@@ -54,7 +54,7 @@ scene({
             }
         }),
         objModel({
-            url: '/assets/models/deer.obj',
+            url: 'assets/models/deer.obj',
             material: 'model-material',
             smoothShading: false,
             scale: 0.02,
