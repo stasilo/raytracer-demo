@@ -1,0 +1,101 @@
+scene({
+    background: '#000000',
+    camera: camera({
+        lookFrom: {x: -43.990, y: 27.130, z: 30.668},
+        lookAt: {x: -7.662, y: 16.142, z: 7.098},
+        vfov: 45,
+        aperture: 0.0001,
+        velocity: 1,
+    }),
+    geometries: [
+        plane({
+            material: 'floor-white',
+            texture: {
+                name: 'check',
+                uvScale: 300
+            },
+            scale: 10000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 20,
+            position: {
+                x: -5,
+                y: 60.0,
+                z: -25
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 20,
+            position: {
+                x: -5,
+                y: 60.0,
+                z: 25
+            },
+        }),
+        objModel({
+            url: '/assets/models/deer.obj',
+            material: 'model-material',
+            smoothShading: true,
+            scale: 0.02,
+            position: {
+                x: 0,
+                y: 0,
+                z: -10
+            },
+            rotation: {
+                y: degToRad(180),
+            }
+        }),
+        objModel({
+            url: '/assets/models/deer.obj',
+            material: 'model-material',
+            smoothShading: false,
+            scale: 0.02,
+            position: {
+                x: 0,
+                y: 0,
+                z: 10
+            },
+            rotation: {
+                y: degToRad(180),
+            }
+        }),
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(${normedColorStr('#010101')}, 1.0);
+                }
+            `
+        })
+    ],
+    materials: [
+        lambertMaterial({
+            name: `floor-white`,
+            color: '#cccccc',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        lambertMaterial({
+            name: `model-material`,
+            color: '#ff0000',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 5
+        }),
+    ]
+});
