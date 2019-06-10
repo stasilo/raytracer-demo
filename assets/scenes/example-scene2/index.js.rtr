@@ -1,0 +1,123 @@
+scene({
+    background: '#000000',
+    camera: camera({
+        lookFrom: {x: -30.759, y: 41.116, z: 37.126},
+        lookAt: {x: -26.255, y: 40.814, z: 36.956},
+        vfov: 45,
+        aperture: 0.000001,
+        velocity: 1,
+    }),
+    geometries: [
+        plane({
+            material: 'floor-white',
+            texture: {
+                name: 'check',
+                uvScale: 35
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        // plane({
+        //     material: 'ceil-light',
+        //     scale: 10,
+        //     position: {
+        //         x: 0,
+        //         y: 70.0,
+        //         z: 10
+        //     },
+        // }),
+        range2d(0, 45, 0, 20)
+            |> takeRandom(#)
+            |> #.map(([_x, _y]) => {
+
+                const [x, y, z] = [
+                    -60 + _x * 6,
+                    3 + _y * 4,
+                    0, //random(70)
+                ];
+
+                return [
+                    cube({
+                        material: `wall-light-${randomIdx(100)}`, //'obj-material',
+                        position: { x, y, z },
+                        scale: {
+                            x: 3,
+                            y: 1.5,
+                            z: 1.5
+                        }
+                    }),
+                    cube({
+                        material: 'glass',
+                        // normalMap: {
+                        //     name: 'normal-map',
+                        //     scale: 1,
+                        //     uvScale: {
+                        //         x: 1,
+                        //         y: 1
+                        //     }
+                        // },
+                        position: { x, y, z },
+                        scale: {
+                            x: 3.5,
+                            y: 2,
+                            z: 2
+                        }
+                    }),
+                ];
+            })
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.1, 0.1, 0.1, 1.);
+                }
+            `
+        }),
+        texture({
+            name: 'normal-map',
+            url: 'assets/images/aluminumNormalMap.jpg'
+        }),
+    ],
+    materials: [
+        lambertMaterial({
+            name: `floor-white`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        lambertMaterial({
+            name: `obj-material`,
+            color: '#707070',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 5
+        }),
+        dialectricMaterial({
+            name: 'glass',
+            color: '#ffffff'
+        }),
+        range(100).map(i =>
+            emissiveMaterial({
+                name: `wall-light-${i}`,
+                color: [random(), random(), random()],
+                intensity: 2.5 //random(0.8) + 0.2
+            })
+            // coatedEmissiveMaterial({
+            //     name: `wall-light-${i}`,
+            //     color: [random(), random(), random()],
+            //     intensity: 1 //random(0.8) + 0.2
+            // })
+        )
+    ]
+});
