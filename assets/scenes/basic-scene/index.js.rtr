@@ -1,12 +1,20 @@
 scene({
-    background: '#000000',
-    camera: camera({
-        lookFrom: {x: -1.652, y: 32.649, z: 117.020},
-        lookAt: {x: -1.558, y: 32.225, z: 112.523},
+    rendererSettings: {
+        realtimeHitDepth: 2,
+        hitDepth: 4,
+        tMax: 5000,
+        maxSphereTracingSteps: 255,
+        resolution: 0.8,
+        renderMode: 'raytrace'
+    },
+    background: ['#000', '#010101'],
+    camera: {
+        lookFrom: {x: -19.907, y: 4.125, z: 35.410},
+        lookAt: {x: -16.569, y: 4.902, z: 32.461},
         vfov: 45,
         aperture: 1e-8,
         velocity: 1,
-    }),
+    },
     geometries: [
         plane({
             material: 'floor-white',
@@ -23,10 +31,10 @@ scene({
         }),
         plane({
             material: 'ceil-light',
-            scale: 20,
+            scale: 30,
             position: {
                 x: 0,
-                y: 50.0,
+                y: 80.0,
                 z: 0
             },
         })
@@ -54,6 +62,6 @@ scene({
             name: `ceil-light`,
             color: '#ffffff',
             intensity: 10
-        }),
+        })
     ]
 });

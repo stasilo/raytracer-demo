@@ -1,0 +1,207 @@
+
+const startPos = -50;
+
+scene({
+    rendererSettings: {
+        realtimeHitDepth: 2,
+        hitDepth: 4,
+        tMax: 5000,
+        maxSphereTracingSteps: 255,
+        resolution: 0.7,
+        renderMode: 'sdf'
+    },
+    camera: {
+        lookFrom: {x: -61.398, y: 76.833, z: -61.249},
+        lookAt: {x: -59.549, y: 73.905, z: -58.347},
+        vfov: 45,
+        aperture: 1e-8,
+        velocity: 1
+    },
+    background: '#000',
+    geometries: [
+        sdf(
+            sdfCylinder({
+                radius: 5,
+                height: 5,
+                position: {x: startPos, y: 10, z: 0},
+                material: `white-mat`,
+            })
+        ),
+        sdf(
+            sdfSphere({
+                material: 'clearcoat-mat',
+                radius: 5,
+                position: {x: startPos + 20, y: 10, z: 0},
+            })
+        ),
+        sdf(
+            sdfBox({
+                material: `white-mat`,
+                dimensions: {x: 5, y: 5, z: 5},
+                position: {x: startPos + 40, y: 10, z: 0},
+            }),
+        ),
+        sdf(
+            sdfTorus({
+                material: 'clearcoat-mat',
+                innerRadius: 2.5,
+                outerRadius: 5,
+                position: {x: startPos + 60, y: 10, z: 0},
+            }),
+        ),
+        sdf(
+            sdfEllipsoid({
+                material: `white-mat`,
+                radius: {
+                    x: 5,
+                    y: 2,
+                    z: 10
+                },
+                position: {x: startPos + 80, y: 10, z: 0},
+            }),
+        ),
+
+        // front row
+        sdf(
+            sdfCone({
+                material: 'clearcoat-mat',
+                radius: 5,
+                height: 10,
+                position: {x: startPos, y: 5, z: 20},
+            }),
+        ),
+        sdf(
+            sdfPyramid({
+                material: `white-mat`,
+                height: 10,
+                base: 10,
+                position: {x: startPos + 20, y: 5, z: 20},
+            }),
+        ),
+        sdf(
+            sdfRoundedCone({
+                material: 'clearcoat-mat',
+                bottomRadius: 5,
+                topRadius: 2,
+                height: 10,
+                position: {x: startPos + 40, y: 5, z: 20},
+            }),
+        ),
+        sdf(
+            sdfCapsule({
+                radius: 5,
+                height: 5,
+                position: {x: startPos + 60, y: 5, z: 20},
+                material: `white-mat`,
+            })
+        ),
+        sdf(
+            sdfLink({
+                material: 'clearcoat-mat',
+                radius: 2,
+                thickness: 1,
+                height: 4,
+                position: {x: startPos + 80, y: 5, z: 20},
+            }),
+        ),
+
+        // frame
+        sdf(
+            sdfLine({
+                material: 'clearcoat-mat',
+                start: {x: startPos - 10, y: 10, z: -15},
+                end: {x: startPos - 10, y: 10, z: 35},
+                thickness: 0.55
+            })
+        ),
+        sdf(
+            sdfLine({
+                material: 'clearcoat-mat',
+                start: {x: startPos - 10, y: 10, z: 35},
+                end: {x: startPos + 90, y: 10, z: 35},
+                thickness: 0.55
+            })
+        ),
+        sdf(
+            sdfLine({
+                material: 'clearcoat-mat',
+                start: {x: startPos + 90, y: 10, z: 35},
+                end: {x: startPos + 90, y: 10, z: -15},
+                thickness: 0.55
+            })
+        ),
+        sdf(
+            sdfLine({
+                material: 'clearcoat-mat',
+                start: {x: startPos + 90, y: 10, z: -15},
+                end: {x: startPos -10, y: 10, z: -15},
+                thickness: 0.55
+            })
+        ),
+
+        // floor
+        plane({
+            material: 'white-mat',
+            texture: {
+                name: 'check',
+                uvScale: 20
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: -8,
+                z: 0
+            },
+        }),
+
+        // lights
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: 50,
+                y: 80.0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: -50,
+                y: 80.0,
+                z: 0
+            },
+        })
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(${normedColorStr('#aa0000')}, 1.0);
+                }
+            `
+        })
+    ],
+    materials: [
+        lambertMaterial({
+            name: `white-mat`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 10
+        }),
+        clearcoatMaterial({
+            name: 'clearcoat-mat',
+            color: '#101010',
+            refIdx: 1.8,
+        }),
+    ]
+});
