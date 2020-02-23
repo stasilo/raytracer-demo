@@ -1,0 +1,127 @@
+const testMaterials = [
+    'coated-emissive-test',
+    'lambert-test',
+    'dialectric-test',
+    'clearcoat-test',
+    'metal-test',
+    'metal-fuzz-test',
+    'emissive-test',
+];
+
+scene({
+    background: '#000000',
+    camera: {
+        lookFrom: {x: 1.124, y: 13.997, z: -39.375},
+        lookAt: {x: 0.986, y: 5.104, z: 4.410},
+        vfov: 45,
+        aperture: 1.3,
+        velocity: 1,
+    },
+    geometries: [
+        plane({
+            material: 'floor-white',
+            texture: {
+                name: 'check',
+                uvScale: 300
+            },
+            scale: 10000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 20,
+            position: {
+                x: 0,
+                y: 50.0,
+                z: -15
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 20,
+            position: {
+                x: 0,
+                y: 50.0,
+                z: 60
+            },
+        }),
+        testMaterials.map((material, i) =>
+            sphere({
+                material,
+                position: {
+                    x: -23 + 8*i,
+                    y: 4.5,
+                    z: 0
+                },
+                radius: 3
+            })
+        )
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.3, 0.0, 0.0, 1.);
+                }
+            `
+        })
+    ],
+    materials: [
+        lambertMaterial({
+            name: `floor-white`,
+            color: '#cccccc',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        lambertMaterial({
+            name: `lambert-test`,
+            color: '#cccccc',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        metalMaterial({
+            name: 'metal-test',
+            color: '#cccccc',
+            fuzz: 0,
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        metalMaterial({
+            name: 'metal-fuzz-test',
+            color: '#cccccc',
+            fuzz: 0.5,
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        dialectricMaterial({
+            name: 'dialectric-test',
+            color: '#cccccc',
+            refIdx: 1.8,
+        }),
+        clearcoatMaterial({
+            name: 'clearcoat-test',
+            color: '#ff0000',
+            refIdx: 1.8,
+        }),
+        coatedEmissiveMaterial({
+            name: 'coated-emissive-test',
+            color: '#ffffff',
+            refIdx: 1.4,
+            intensity: 1
+        }),
+        emissiveMaterial({
+            name: `emissive-test`,
+            color: '#ffffff',
+            intensity: 1
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 2
+        }),
+    ]
+});
