@@ -1,0 +1,103 @@
+
+const startPos = -50;
+
+scene({
+    rendererSettings: {
+        realtimeHitDepth: 2,
+        hitDepth: 8,
+        tMax: 5000,
+        maxSphereTracingSteps: 255,
+        resolution: 0.5,
+        renderMode: 'sdf'
+    },
+    camera: {
+        lookFrom: {x: -2.358, y: 32.625, z: 15.931},
+        lookAt: {x: -0.408, y: 29.315, z: 13.557},
+        vfov: 45,
+        aperture: 1e-8,
+        velocity: 1
+    },
+    background: '#000',
+    geometries: [
+        sdf(
+            sdfTorus({
+                material: 'clearcoat',
+                displacement: 'sinus-displacement',
+                innerRadius: 2.5,
+                outerRadius: 5,
+                position: {x: startPos + 60, y: 10, z: 0},
+            }),
+        ),
+        plane({
+            material: 'lambert-white',
+            texture: {
+                name: 'check',
+                uvScale: 20
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: 50,
+                y: 80.0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: -50,
+                y: 80.0,
+                z: 0
+            },
+        })
+    ],
+    displacements: [
+        {
+            name: 'sinus-displacement',
+            src: `
+                float offset = ${glslFloat(random(100))};
+                float d = sin(1.*(p.x+offset)) * sin(1.*(p.y+offset)) * sin(1.*(p.z+offset));
+                dDist = d;
+            `
+        }
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(${normedColorStr('#aa0000')}, 1.0);
+                }
+            `
+        })
+    ],
+    materials: [
+        lambertMaterial({
+            name: `lambert-white`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 10
+        }),
+        clearcoatMaterial({
+            name: 'clearcoat',
+            color: '#ffffff',
+            refIdx: 1.8,
+        }),
+    ]
+});

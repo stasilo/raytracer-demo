@@ -1,0 +1,104 @@
+scene({
+    rendererSettings: {
+        resolution: 0.7
+    },
+    background: '#000000',
+    camera: {
+        lookFrom: {x: 2.533, y: 16.575, z: 67.897},
+        lookAt: {x: 2.539, y: 16.067, z: 63.407},
+        vfov: 45,
+        aperture: 1e-8,
+        velocity: 1,
+    },
+    geometries: [
+        plane({
+            material: 'floor-material',
+            texture: {
+                name: 'check',
+                uvScale: 35
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'light-material',
+            scale: 20,
+            position: {
+                x: 0,
+                y: 50.0,
+                z: 10
+            },
+        }),
+        sphere({
+            material: 'obj-material',
+            normalMap: {
+                name: 'obj-normal-map',
+                uvScale: {
+                    x: 3,
+                    y: 3
+                }
+            },
+            position: {
+                x: -10,
+                y: 12,
+                z: 0
+            },
+            radius: 10
+        }),
+        cube({
+            material: 'obj-material',
+            normalMap: {
+                name: 'obj-normal-map',
+                scale: 1,
+                uvScale: {
+                    x: 1,
+                    y: 1
+                }
+            },
+            position: {
+                x: 12,
+                y: 12,
+                z: 0
+            },
+            scale: 15
+        })
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.3, 0.0, 0.0, 1.);
+                }
+            `
+        }),
+        texture({
+            name: 'obj-normal-map',
+            url: 'assets/images/aluminumNormalMap.jpg'
+        }),
+    ],
+    materials: [
+        lambertMaterial({
+            name: `floor-material`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        lambertMaterial({
+            name: `obj-material`,
+            color: '#707070',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `light-material`,
+            color: '#ffffff',
+            intensity: 5
+        }),
+    ]
+});

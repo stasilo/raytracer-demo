@@ -1,0 +1,148 @@
+scene({
+    rendererSettings: {
+        realtimeHitDepth: 2,
+        hitDepth: 4,
+        tMax: 5000,
+        maxSphereTracingSteps: 255,
+        resolution: 0.6,
+        renderMode: 'sdf'
+    },
+    sdfExportSettings: {
+        resolution: 400,
+        minCoords: {x: -10, y: -1, z: -10},
+        maxCoords: {x: 60, y: 70, z: 60}
+    },
+    camera: {
+        lookFrom: {x: -64.808, y: 17.269, z: -36.203},
+        lookAt: {x: -61.062, y: 17.495, z: -33.691},
+        vfov: 45,
+        aperture: 1e-8,
+        velocity: 1
+    },
+    background: '#000',
+    geometries: [
+        sdf(
+            opSubtract(
+                opUnionRound({radius: 6.0, colorBlendAmount: 0.5},
+                    opSubtract(
+                        sdfSphere({
+                            material: 'clearcoat-mat',
+                            radius: 10,
+                            position: {x: 9, y: 9.5, z: 0}
+                        }),
+                        sdfSphere({
+                            material: 'clearcoat-mat',
+                            radius: 10,
+                            position: {x: 0, y: 9.5, z: 0},
+                            displacement: 'sinus-displacement'
+                        })
+                    ),
+                    sdfBox({
+                        material: 'clearcoat-mat',
+                        dimensions: {x: 15, y: 3, z: 15},
+                        position: {x: 11, y: 39, z: 9.5},
+                        texture: {
+                            name: 'check',
+                            uvScale: 1/20
+                        },
+                    }),
+                    sdfBox({
+                        domain: {
+                            domainOp: 'twist',
+                            size: 0.1,
+                        },
+                        material: `lambert-red`,
+                        dimensions: {x: 7, y: 7, z: 7},
+                        position: {x: 11, y: 27, z: 9.5}
+                    }),
+                    sdfSphere({
+                        material: 'floor-white',
+                        radius: 10,
+                        position: {x: 10, y: 9.5, z: 20}
+                    })
+                ),
+                sdfSphere({
+                    material: 'floor-white',
+                    radius: 7,
+                    position: {x: 0, y: 39, z: 9.5}
+                })
+            )
+        ),
+        plane({
+            material: 'floor-white',
+            texture: {
+                name: 'check',
+                uvScale: 20
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: 50,
+                y: 80.0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: -50,
+                y: 80.0,
+                z: 0
+            },
+        })
+    ],
+    displacements: [
+        {
+            name: 'sinus-displacement',
+            src: `
+                float offset = ${glslFloat(random(100))};
+                float d = sin(1.*(p.x+offset)) * sin(1.*(p.y+offset)) * sin(1.*(p.z+offset));
+                dDist = d;
+            `
+        }
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.3, 0.0, 0.0, 1.);
+                }
+            `
+        })
+    ],
+    materials: [
+        lambertMaterial({
+            name: `floor-white`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        lambertMaterial({
+            name: `lambert-red`,
+            color: '#ff0000',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 10
+        }),
+        clearcoatMaterial({
+            name: 'clearcoat-mat',
+            color: '#101010',
+            refIdx: 1.8,
+        }),
+    ]
+});

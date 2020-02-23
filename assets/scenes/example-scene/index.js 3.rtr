@@ -1,0 +1,304 @@
+const volTexSize = 64;
+
+const glassCube = ({
+    scale,
+    material,
+    texture,
+    glassDistance,
+    ...props
+}) => [
+    cube({
+        scale,
+        material,
+        texture,
+        ...props
+    }),
+    cube({
+        scale: {
+            x: scale.x + glassDistance,
+            y: scale.y + glassDistance,
+            z: scale.z + glassDistance
+        },
+        material: 'box-glass',
+        ...props
+    })
+];
+
+scene({
+    background: [
+        '#000000',
+        '#050505'
+    ],
+    camera: {
+        lookFrom: {x: 3.017, y: 0.645, z: 0.278},
+        lookAt: {x: -0.214, y: 1.114, z: -1.535},
+        vfov: 45,
+        aperture: 0.09,
+        velocity: 0.25,
+    },
+    geometries: [
+        plane({
+            material: 'floor-white',
+            texture: 'check',
+            scale: 30,
+            position: {
+                x: 0.3,
+                y: 0.0,
+                z: -0.4
+            },
+            rotation: {
+                y: degToRad(60)
+            }
+        }),
+        volume({
+            material: 'volume-red',
+            texture: 'fog-texture',
+            minCoords: {
+                x: -20,
+                y: 0,
+                z: -20
+            },
+            maxCoords: {
+                x: 10,
+                y: 15,
+                z: 10
+            },
+        }),
+        sphere({
+            material: 'ceil-light',
+            position: {
+                x: -4.5,
+                y: 46,
+                z: -7.5
+            },
+            radius: 30
+        }),
+        diamond({
+            material: 'box-light',
+            scale: 0.4,
+            position: {
+                x: -0.3,
+                y: 1.0,
+                z: -1.6
+            },
+            rotation: {
+                y: degToRad(220),
+            }
+        }),
+        diamond({
+            material: 'box-glass',
+            scale: 0.81,//0.8,
+            position: {
+                x: -0.3,
+                y: 1.0,
+                z: -1.6
+            },
+            rotation: {
+                y: degToRad(220),
+            }
+        }),
+        range2d(15)
+            |> subRange(#, range2d(2, 6))
+            |> takeRandom
+            |> #.map(([x, z]) => {
+                const material = pluckRandom([
+                    'box-black',
+                    'box-white',
+                    'box-light',
+                    'box-glass'
+                ]);
+
+                const scale = 0.5;
+                const yScale = scale
+                    + (x + 1) * (z + 1) * 0.1;
+
+                const props = {
+                    material,
+                    scale: {
+                        x: scale,
+                        y: yScale,
+                        z: scale,
+                    },
+                    position: {
+                        x: 1.2 - x*(scale+0.15),
+                        y: 0.1,
+                        z: 0.1 - z*(scale+0.15)
+                    },
+                    normalMap: {
+                        name: 'box-normal-map',
+                        scale: 1,
+                        uvScale: {
+                            y: yScale
+                        }
+                    }
+                };
+
+                return material !== 'box-black'
+                    && material !== 'box-white'
+                        ? glassCube({
+                            ...props,
+                            normalMap: undefined,
+                            texture: `pattern-${randomInt(5)}`,
+                            glassDistance: 0.05,
+                        })
+                        : material === 'box-black'
+                            ? [
+                                cube(props),
+                                sphere({
+                                    position: {
+                                        x: props.position.x,
+                                        y: props.position.y + props.scale.y/2,
+                                        z: props.position.z,
+                                    },
+                                    material: 'halfsphere-light',
+                                    radius: 0.1
+                                })
+                            ]
+                            : [cube(props)];
+            }),
+    ],
+    textures: [
+        // normal map
+        texture({
+            name: 'box-normal-map',
+            url: 'assets/images/aluminumNormalMap.jpg'
+        }),
+        // floor
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(500.*uv.x)*sin(500.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.05, 0.05, 0.05, 1.);
+                }
+            `
+        }),
+        // box pattern, from thebookofshaders.com
+        range(6).map(i =>
+            texture({
+                name: `pattern-${i}`,
+                src: `
+                    vec2 rotate2D (vec2 _st, float _angle) {
+                        _st -= 0.5;
+                        _st =  mat2(cos(_angle),-sin(_angle),
+                                    sin(_angle),cos(_angle)) * _st;
+                        _st += 0.5;
+                        return _st;
+                    }
+
+                    vec2 tile (vec2 _st, float _zoom) {
+                        _st *= _zoom;
+                        return fract(_st);
+                    }
+
+                    vec2 rotateTilePattern(vec2 _st) {
+                        //  Scale the coordinate system by 2x2
+                        _st *= 0.5 + ${glslFloat(random(2))};
+
+                        //  Give each cell an index number
+                        //  according to its position
+                        float index = 0.0;
+                        index += step(1., mod(_st.x,2.0));
+                        index += step(1., mod(_st.y,2.0))*2.0;
+
+                        // Make each cell between 0.0 - 1.0
+                        _st = fract(_st);
+
+                        // Rotate each cell according to the index
+                        if(index == 1.0){
+                            //  Rotate cell 1 by 90 degrees
+                            _st = rotate2D(_st,PI*0.5);
+                        } else if(index == 2.0){
+                            //  Rotate cell 2 by -90 degrees
+                            _st = rotate2D(_st,PI*-0.5);
+                        } else if(index == 3.0){
+                            //  Rotate cell 3 by 180 degrees
+                            _st = rotate2D(_st,PI);
+                        }
+
+                        return _st;
+                    }
+
+                    void renderTexture(vec2 uv, out vec4 tColor) {
+                        vec2 st = uv;
+
+                        st = tile(st, 3.0);
+                        st = rotateTilePattern(st);
+
+                        ${randomBool()
+                            ? 'st = tile(st,2.0);'
+                            : ''
+                        }
+
+                        ${randomBool()
+                            ? `st = rotate2D(st,-PI * ${glslFloat(random(3))} * 0.25);`
+                            : ''
+                        }
+
+                        tColor = vec4(vec3(step(st.x,st.y))*0.5, 1.0);
+                    }
+                `
+            })
+        ),
+        volumeTexture({
+            name: 'fog-texture',
+            size: volTexSize,
+            data: range3d(volTexSize)
+                |> #.map(([x, y, z]) => {
+                    const scale = 0.05; //50
+                    let f = simplex.noise3D(x*scale, y*scale, z*scale);
+                    return clamp(f, 0.0, 1.0);
+                })
+                |> tileSeamless3d(#, volTexSize)
+        })
+    ],
+    materials: [
+        // fog
+        anisotropicVolumeMaterial({
+            name: 'volume-red',
+            color: '#ff0000',
+            albedo: [1.0, 1.0, 1.0],
+            density: 0.15,
+            scale: 50
+        }),
+        // boxes
+        emissiveMaterial({
+            name: `box-light`,
+            color: '#ffffff',
+            intensity: 10
+        }),
+        dialectricMaterial({
+            name: 'box-glass'
+        }),
+        metalMaterial({
+            name: `box-black`,
+            color: '#030303',
+            fuzz: 0.2,
+            albedo: [0.9, 0.9, 0.9]
+        }),
+        lambertMaterial({
+            name: `box-white`,
+            color: '#ffffff',
+            albedo: [0.9, 0.9, 0.9]
+        }),
+        metalMaterial({
+            name: `floor-white`,
+            color: '#ffffff',
+            fuzz: 0.15,
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        // other lights
+        emissiveMaterial({
+            name: `halfsphere-light`,
+            color: '#ffffff',
+            intensity: 30
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 0.05
+        }),
+    ]
+});

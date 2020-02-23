@@ -1,0 +1,92 @@
+scene({
+    rendererSettings: {
+        realtimeHitDepth: 2,
+        hitDepth: 8,
+        tMax: 5000,
+        maxSphereTracingSteps: 255,
+        resolution: 0.6,
+        renderMode: 'sdf'
+    },
+    camera: {
+        lookFrom: {x: 24.055, y: 21.089, z: 32.113},
+        lookAt: {x: 21.614, y: 19.748, z: 28.558},
+        vfov: 45,
+        aperture: 1e-8,
+        velocity: 1
+    },
+    background: '#000',
+    geometries: [
+        sdf(
+            sdfBox({
+                material: 'lambert-mat',
+                dimensions: {x: 5, y: 5, z: 5},
+                position: {x: 0, y: 10, z: 0},
+                displacementMap: {
+                    name: 'aluminum',
+                    uvScale: 0.2,
+                    scale: 0.5
+                }
+            }),
+        ),
+        plane({
+            material: 'lambert-mat',
+            texture: {
+                name: 'check',
+                uvScale: 20
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: 50,
+                y: 80.0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: -50,
+                y: 80.0,
+                z: 0
+            },
+        })
+    ],
+    textures: [
+        texture({
+            name: 'aluminum',
+            url: 'assets/images/displacementMapTest.png'
+        }),
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.4, 0.0, 0.0, 1.);
+                }
+            `
+        })
+    ],
+    materials: [
+        lambertMaterial({
+            name: `lambert-mat`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 10
+        }),
+    ]
+});

@@ -1,0 +1,122 @@
+const volTexSize = 64*2;
+
+scene({
+    rendererSettings: {
+        resolution: 0.35
+    },
+    background: '#000000',
+    camera: {
+        lookFrom: {x: 65.017, y: 5.963, z: 40.458},
+        lookAt: {x: 61.000, y: 6.409, z: 38.433},
+        vfov: 45,
+        aperture: 1e-8,
+        velocity: 1
+    },
+    geometries: [
+        plane({
+            material: 'floor-white',
+            texture: {
+                name: 'check',
+                uvScale: 30
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: 0.0,
+                z: 0
+            },
+        }),
+        volume({
+            material: 'volume-material',
+            texture: 'volume-texture',
+            minCoords: {
+                x: -55,
+                y: 0.0,
+                z: -55
+            },
+            maxCoords: {
+                x: 55,
+                y: 40.0,
+                z: 55
+            }
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 40,
+            position: {
+                x: 0,
+                y: 70.0,
+                z: 0
+            },
+        }),
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.3, 0.0, 0.0, 1.);
+                }
+            `
+        }),
+        volumeTexture({
+            name: 'volume-texture',
+            size: volTexSize,
+            cache: true,
+            data: range3d(volTexSize)
+                |> #.map(([x, y, z]) => {
+                    const scale = 0.01;
+
+                    let q = vec3.fromValues(x*scale, y*scale - 0.01, z*scale - 1);
+                    let f;
+
+                    // fbm inspired by: https://www.shadertoy.com/view/XslGRr
+
+                    f  = 0.50000*simplex.noise3D(...q);
+                    vec3.scale(q, q, 2.02);
+
+                    f += 0.25000*simplex.noise3D(...q);
+                    vec3.scale(q, q, 2.03);
+
+                    f += 0.12500*simplex.noise3D(...q);
+                    vec3.scale(q, q, 2.01);
+
+                    f += 0.06250*simplex.noise3D(...q);
+                    vec3.scale(q, q, 2.02);
+
+                    f += 0.03125*simplex.noise3D(...q);
+
+                    return clamp(1.5 - (y*scale) - 2.0 + 2.75*f, 0.0, 1.0 );
+                })
+                |> tileSeamless3d(#, volTexSize)
+        })
+    ],
+    materials: [
+        anisotropicVolumeMaterial({
+            name: 'volume-material',
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8],
+            density: 0.9,
+            scale: 50,
+            sampleOffset: 0
+        }),
+        lambertMaterial({
+            name: `floor-white`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        lambertMaterial({
+            name: `sphere-material`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 10
+        }),
+    ]
+});

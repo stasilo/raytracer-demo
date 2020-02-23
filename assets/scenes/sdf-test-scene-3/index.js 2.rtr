@@ -1,0 +1,111 @@
+scene({
+    rendererSettings: {
+        realtimeHitDepth: 2,
+        hitDepth: 14,
+        tMax: 5000,
+        maxSphereTracingSteps: 255,
+        resolution: 0.6,
+        renderMode: 'sdf'
+    },
+    camera: {
+        lookFrom: {x: 56.195, y: 14.273, z: -18.576},
+        lookAt: {x: 51.881, y: 13.817, z: -17.309},
+        vfov: 45,
+        aperture: 1e-8,
+        velocity: 1
+    },
+    background: '#000',
+    geometries: [
+        sdf(
+            {
+                // bounding box has to be set manually
+                // when doing domains ops for the whole csg
+                boundingBox: {
+                    minCoords: {x: -70, y: 0, z: -70},
+                    maxCoords: {x: 70, y: 70, z: 70}
+                }
+            },
+            opSubtract(
+                sdfBox({
+                    domain: {
+                        domainOp: 'twist',
+                        size: 0.1,
+                    },
+                    material: 'clearcoat-mat',
+                    dimensions: {x: 10, y: 10, z: 10},
+                    position: {x: 0, y: 10, z: 0}
+                }),
+                sdfSphere({
+                    domain: {
+                        domainOp: 'repeat',
+                        axis: 'xyz',
+                        size: 5
+                    },
+                    radius: 3,
+                    position: {x: 0, y: 0, z: 0}
+                })
+            )
+        ),
+        plane({
+            material: 'floor-white',
+            texture: {
+                name: 'check',
+                uvScale: 20
+            },
+            scale: 1000,
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: 50,
+                y: 80.0,
+                z: 0
+            },
+        }),
+        plane({
+            material: 'ceil-light',
+            scale: 30,
+            position: {
+                x: -50,
+                y: 80.0,
+                z: 0
+            },
+        })
+    ],
+    textures: [
+        texture({
+            name: 'check',
+            src: `
+                float s = sin(50.*uv.x)*sin(50.*uv.y);
+                if(s < 0.) {
+                    tColor = vec4(${normedColorStr('#aaaaaa')}, 1.0);
+                } else {
+                    tColor = vec4(0.3, 0.0, 0.0, 1.);
+                }
+            `
+        })
+    ],
+    materials: [
+        lambertMaterial({
+            name: `floor-white`,
+            color: '#ffffff',
+            albedo: [0.8, 0.8, 0.8]
+        }),
+        emissiveMaterial({
+            name: `ceil-light`,
+            color: '#ffffff',
+            intensity: 10
+        }),
+        clearcoatMaterial({
+            name: 'clearcoat-mat',
+            color: '#aaaaaa',
+            refIdx: 1.8,
+        })
+    ]
+});
